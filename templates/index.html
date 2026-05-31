@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FloodSense Action — Flood Risk Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Design Variables ── */
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #0f172a;
+      --bg-alt: #111827;
+      --card-bg: rgba(15, 23, 42, 0.6);
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --border-color: #334155;
+      --surface: rgba(30, 41, 59, 0.6);
+      --surface-strong: rgba(15, 23, 42, 0.85);
+      --shadow: rgba(15, 23, 42, 0.35);
+      --danger-dark: #dc2626;
+      --warning-dark: #d97706;
+      --hero-bg: rgba(15, 23, 42, 0.45);
+      --input-bg: rgba(15, 23, 42, 0.5);
+      --option-bg: rgba(255, 255, 255, 0.05);
+      --ticker: rgba(59, 130, 246, 0.05);
+    }
+
+    body.light-theme {
+      --primary: #2563eb;
+      --primary-light: #60a5fa;
+      --success: #16a34a;
+      --warning: #ea580c;
+      --danger: #b91c1c;
+      --bg: #f8fafc;
+      --bg-alt: #ffffff;
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --border-color: #cbd5e1;
+      --surface: rgba(255,255,255,0.92);
+      --surface-strong: rgba(255,255,255,0.98);
+      --shadow: rgba(15, 23, 42, 0.08);
+      --hero-bg: rgba(248, 250, 252, 0.85);
+      --input-bg: rgba(248, 250, 252, 0.9);
+      --option-bg: rgba(248, 250, 252, 0.95);
+      --ticker: rgba(59, 130, 246, 0.12);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--bg-alt) 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.35s ease, color 0.35s ease;
+    }
+
+    /* ── Header/Navigation ── */
+    header {
+      background: rgba(14, 25, 45, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1.2rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .logo-mark {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary-light) 0%, #60a5fa 100%);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+      box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+    }
+
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.02em;
+    }
+
+    header p {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      opacity: 0.8;
+    }
+
+    .header-badge {
+      margin-left: auto;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--primary-light);
+      font-size: 0.7rem;
+      padding: 0.5rem 0.9rem;
+      border-radius: 20px;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+
+    .theme-toggle {
+      margin-left: 1rem;
+      padding: 0.65rem 1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-primary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .hero-panel {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr;
+      gap: 2rem;
+      margin-bottom: 2.5rem;
+      padding: 2rem;
+      background: var(--hero-bg);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 28px;
+      box-shadow: 0 30px 60px rgba(15, 23, 42, 0.25);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), transparent 40%);
+      pointer-events: none;
+    }
+
+    .hero-panel > div {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-copy {
+      margin-top: 1rem;
+      max-width: 640px;
+      line-height: 1.75;
+      font-size: 1rem;
+      color: var(--text-secondary);
+    }
+
+    .hero-title {
+      font-size: clamp(2rem, 3vw, 3rem);
+      line-height: 1.05;
+      margin-top: 0.8rem;
+      max-width: 780px;
+      color: #ffffff;
+    }
+
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1.8rem;
+    }
+
+    .metric-card {
+      background: var(--option-bg);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 16px;
+      padding: 1rem 1.2rem;
+      min-height: 96px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.3rem;
+    }
+
+    .metric-card span {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .metric-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: rgba(59, 130, 246, 0.12);
+      color: var(--primary-light);
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .metric-card strong {
+      font-size: 1rem;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .hero-visual {
+      display: grid;
+      align-content: center;
+      justify-items: end;
+    }
+
+    .hero-visual::before {
+      content: 'FloodSense';
+      font-size: 4rem;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.08);
+      letter-spacing: 0.15em;
+      transform: translateY(-12px);
+    }
+
+    .hero-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.9rem 1.2rem;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.13);
+      color: #bfdbfe;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .hero-panel .hero-chip {
+      margin-bottom: 2rem;
+    }
+
+    .hero-visual-block {
+      width: 100%;
+      border-radius: 28px;
+      min-height: 260px;
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.14), var(--surface-strong));
+      border: 1px solid rgba(96, 165, 250, 0.18);
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+    }
+
+    .hero-chart {
+      position: absolute;
+      inset: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .hero-chart .mini-card {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 18px;
+      padding: 1rem;
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .hero-chart .mini-card span {
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+    }
+
+    .hero-chart .mini-card strong {
+      color: #ffffff;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .hero-chart-bar {
+      position: relative;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(59, 130, 246, 0.25), rgba(59, 130, 246, 0.05));
+      overflow: hidden;
+    }
+
+    .hero-chart-bar::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      width: 68%;
+      background: linear-gradient(90deg, #60a5fa, #3b82f6);
+      border-radius: inherit;
+    }
+
+    .hero-chart-band {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(96, 165, 250, 0.12), transparent 32%);
+      pointer-events: none;
+    }
+
+    /* ── Main Layout ── */
+    main {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .hero-panel { grid-template-columns: 1fr; }
+      .hero-metrics { grid-template-columns: 1fr; }
+      .hero-visual { justify-items: start; }
+    }
+
+    /* ── Section Labels ── */
+    .section-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--primary-light);
+      margin-bottom: 1rem;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+
+    /* ── Card Base ── */
+    .card {
+      background: var(--surface);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(59, 130, 246, 0.5);
+      box-shadow: 0 30px 60px rgba(59, 130, 246, 0.1);
+    }
+
+    .card h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.8rem;
+      color: var(--text-primary);
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Form Fields ── */
+    .field {
+      margin-bottom: 1.5rem;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+      color: var(--text-primary);
+      letter-spacing: 0.01em;
+    }
+
+    .field .hint {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+      display: block;
+      opacity: 0.8;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border: 1.5px solid var(--border-color);
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.5);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+      appearance: none;
+    }
+
+    input[type="text"]::placeholder,
+    input[type="number"]::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--primary-light);
+      background: rgba(59, 130, 246, 0.05);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    select {
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 20px;
+      padding-right: 2.5rem;
+    }
+
+    /* ── Button ── */
+    .btn-assess {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: linear-gradient(135deg, var(--primary-light) 0%, #1e40af 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-assess:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-assess:active {
+      transform: translateY(0);
+    }
+
+    .btn-assess:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ── Result Panel ── */
+    .result-panel {
+      display: none;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-color);
+      animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .result-panel.visible {
+      display: block;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── Risk Badge ── */
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.9rem 1.2rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.5rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .risk-HIGH {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1.5px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .risk-MODERATE {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fcd34d;
+      border: 1.5px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .risk-LOW {
+      background: rgba(16, 185, 129, 0.15);
+      color: #86efac;
+      border: 1.5px solid rgba(16, 185, 129, 0.3);
+    }
+
+    /* ── Score Line ── */
+    .score-line {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: rgba(59, 130, 246, 0.05);
+      border-left: 3px solid var(--primary-light);
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    /* ── Breakdown ── */
+    .breakdown {
+      margin-bottom: 2rem;
+    }
+
+    .breakdown-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .result-summary {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.2rem 1.3rem;
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.18);
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+    }
+
+    .summary-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 1.75rem;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .summary-copy strong {
+      display: block;
+      font-size: 1.05rem;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .summary-copy p {
+      font-size: 0.92rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .breakdown-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      width: 80px;
+      flex-shrink: 0;
+      color: var(--text-secondary);
+      text-transform: capitalize;
+    }
+
+    .breakdown-bar-wrap {
+      flex: 1;
+      background: rgba(59, 130, 246, 0.1);
+      height: 8px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .breakdown-bar {
+      height: 100%;
+      border-radius: 10px;
+      background: linear-gradient(90deg, var(--primary-light) 0%, #60a5fa 100%);
+      transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .breakdown-pts {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--primary-light);
+      width: 50px;
+      text-align: right;
+    }
+
+    /* ── Advisory Box ── */
+    .advisory-box {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-left: 4px solid var(--warning);
+      padding: 1.2rem;
+      border-radius: 12px;
+      margin-top: 1.5rem;
+    }
+
+    .threshold-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 16px;
+      padding: 1.4rem 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .threshold-list {
+      color: var(--text-secondary);
+      font-size: 0.84rem;
+      line-height: 1.9;
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .threshold-dot {
+      width: 0.8rem;
+      height: 0.8rem;
+      display: inline-block;
+      border-radius: 999px;
+      margin-right: 0.7rem;
+      vertical-align: middle;
+    }
+
+    .threshold-dot.low { background: var(--success); }
+    .threshold-dot.moderate { background: var(--warning); }
+    .threshold-dot.high { background: var(--danger); }
+
+    .light-theme header {
+      background: rgba(255, 255, 255, 0.92);
+      border-color: rgba(203, 213, 225, 0.5);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .light-theme .hero-panel,
+    .light-theme .card,
+    .light-theme .how-it-works,
+    .light-theme .node-card,
+    .light-theme .hero-visual-block,
+    .light-theme .threshold-card,
+    .light-theme .result-panel,
+    .light-theme .result-summary {
+      background: var(--surface);
+      border-color: rgba(148, 163, 184, 0.18);
+      box-shadow: 0 15px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .light-theme .hero-panel::before {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), transparent 35%);
+    }
+
+    .light-theme .hero-chart .mini-card,
+    .light-theme .metric-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(148, 163, 184, 0.2);
+    }
+
+    .light-theme .theme-toggle {
+      color: var(--text-primary);
+      border-color: rgba(59, 130, 246, 0.25);
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .light-theme .input-bg,
+    .light-theme input[type="text"],
+    .light-theme input[type="number"],
+    .light-theme select {
+      background: var(--input-bg);
+    }
+
+    .advisory-box .advisory-head {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--warning);
+      margin-bottom: 0.7rem;
+      font-weight: 700;
+    }
+
+    .advisory-box p {
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+    }
+
+    /* ── How It Works Section ── */
+    .how-it-works {
+      background: var(--surface);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .how-it-works h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.8rem;
+      color: var(--text-primary);
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .factor-row {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .factor-row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .factor-weight {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--warning);
+      width: 50px;
+      flex-shrink: 0;
+      line-height: 1;
+      padding-top: 2px;
+    }
+
+    .factor-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.3rem;
+    }
+
+    .factor-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ── Regional Nodes Section ── */
+    .nodes-section {
+      margin-top: 3rem;
+    }
+
+    .nodes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .node-card {
+      background: var(--surface);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .node-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--primary-light);
+      transition: all 0.3s ease;
+    }
+
+    .node-card.HIGH::before {
+      background: var(--danger);
+    }
+
+    .node-card.MODERATE::before {
+      background: var(--warning);
+    }
+
+    .node-card.LOW::before {
+      background: var(--success);
+    }
+
+    .node-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(59, 130, 246, 0.5);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .node-location {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.8rem;
+    }
+
+    .node-risk {
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      letter-spacing: 0.05em;
+    }
+
+    .node-risk.HIGH {
+      color: #fca5a5;
+    }
+
+    .node-risk.MODERATE {
+      color: #fcd34d;
+    }
+
+    .node-risk.LOW {
+      color: #86efac;
+    }
+
+    .node-score-bar {
+      background: rgba(59, 130, 246, 0.1);
+      height: 8px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 0.8rem;
+    }
+
+    .node-score-fill {
+      height: 100%;
+      border-radius: 10px;
+    }
+
+    .fill-HIGH {
+      background: linear-gradient(90deg, var(--danger) 0%, #f87171 100%);
+    }
+
+    .fill-MODERATE {
+      background: linear-gradient(90deg, var(--warning) 0%, #fbbf24 100%);
+    }
+
+    .fill-LOW {
+      background: linear-gradient(90deg, var(--success) 0%, #6ee7b7 100%);
+    }
+
+    .node-score-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2.5rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
+      margin-top: 4rem;
+      background: rgba(14, 25, 45, 0.5);
+    }
+
+    /* ── Scrollbar Styling ── */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(59, 130, 246, 0.3);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(59, 130, 246, 0.5);
+    }
+
+    @media (max-width: 768px) {
+      main {
+        padding: 1.5rem 1rem;
+      }
+      header {
+        padding: 1rem;
+      }
+      .card {
+        padding: 1.5rem;
+      }
+      .nodes-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-mark">FS</div>
+    <div>
+      <h1>FloodSense Action</h1>
+      <p>Flood Risk Intelligence — Personal flood risk dashboard</p>
+    </div>
+    <span class="header-badge">Local risk tool</span>
+    <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()">Light mode</button>
+  </header>
+
+  <main>
+
+    <section class="hero-panel">
+      <div>
+        <p class="section-label">Flood risk dashboard</p>
+        <h1 class="hero-title">A practical flood risk dashboard for local decisions.</h1>
+        <p class="hero-copy">Enter local rainfall, ground elevation, drainage and soil data. The dashboard calculates flood risk and gives clear next-step actions for safer local planning.</p>
+        <div class="hero-metrics">
+          <div class="metric-card">
+            <div class="metric-icon">💧</div>
+            <span>Rainfall</span>
+            <strong>Storm water load</strong>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon">📈</div>
+            <span>Elevation</span>
+            <strong>Ground vulnerability</strong>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon">⚠️</div>
+            <span>Guidance</span>
+            <strong>Next-step actions</strong>
+          </div>
+        </div>
+      <div class="hero-visual">
+        <div class="hero-chip">Quick check</div>
+        <div class="hero-visual-block">
+          <div class="hero-chart-band"></div>
+          <div class="hero-chart">
+            <div class="mini-card">
+              <span>Current model</span>
+              <strong>Input review</strong>
+              <div class="hero-chart-bar"></div>
+            </div>
+            <div class="mini-card">
+              <span>Analysis</span>
+              <strong>Risk advisory</strong>
+              <div class="hero-chart-bar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Calculator + How it Works -->
+    <div class="grid-2">
+
+      <!-- Calculator -->
+      <div class="card">
+        <p class="section-label">Risk Assessment</p>
+        <h2>Calculate Flood Risk</h2>
+
+        <form id="assessmentForm" onsubmit="runAssessment(event)">
+          <div class="field">
+          <label for="location">Location Name</label>
+          <input type="text" id="location" placeholder="e.g. Kitwe, Zambia" />
+        </div>
+
+        <div class="field">
+          <label for="rainfall">Rainfall (last 48 hours)</label>
+          <span class="hint">Enter amount in millimetres (mm)</span>
+          <input type="number" id="rainfall" placeholder="e.g. 85" min="0" max="300" />
+        </div>
+
+        <div class="field">
+          <label for="elevation">Elevation</label>
+          <span class="hint">Enter in metres (m). Lower values mean lower ground and higher flood vulnerability.</span>
+          <input type="number" id="elevation" placeholder="e.g. 15" min="0" max="5000" />
+        </div>
+
+        <div class="field">
+          <label for="drainage">Drainage quality</label>
+          <select id="drainage">
+            <option value="">— Select —</option>
+            <option value="poor">Poor — water pools easily</option>
+            <option value="moderate">Moderate — drains slowly</option>
+            <option value="good">Good — drains quickly</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="soil">Soil type</label>
+          <select id="soil">
+            <option value="">— Select —</option>
+            <option value="clay">Clay — low absorption</option>
+            <option value="loam">Loam — medium absorption</option>
+            <option value="sandy">Sandy — high absorption</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-assess" id="assessBtn">
+          ASSESS FLOOD RISK →
+        </button>
+        </form>
+
+        <!-- Result -->
+        <div class="result-panel" id="resultPanel">
+          <div class="risk-badge" id="riskBadge"></div>
+          <div class="score-line" id="scoreLine"></div>
+          <div class="result-summary" id="resultSummary">
+            <div class="summary-icon" id="summaryIcon">☀️</div>
+            <div class="summary-copy">
+              <strong id="summaryTitle">Stable conditions</strong>
+              <p id="summaryNote">A quick outlook based on rainfall, ground elevation, drainage and soil.</p>
+            </div>
+          </div>
+          <div class="breakdown" id="breakdown"></div>
+          <div class="advisory-box">
+            <div class="advisory-head">⚠ Action Advisory</div>
+            <p id="advisoryText"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- How it works -->
+      <div class="how-it-works">
+        <p class="section-label">Methodology</p>
+        <h2>How the Risk Score Works</h2>
+
+        <div class="factor-row">
+          <div class="factor-weight">40%</div>
+          <div>
+            <div class="factor-name">Rainfall (48-hour)</div>
+            <div class="factor-desc">The most critical short-term trigger. Higher recent rainfall dramatically increases the probability of surface flooding and run-off.</div>
+          </div>
+        </div>
+
+        <div class="factor-row">
+          <div class="factor-weight">30%</div>
+          <div>
+            <div class="factor-name">Elevation</div>
+            <div class="factor-desc">Lower-lying ground is more vulnerable to surface water and runoff. Areas around 15m or lower are especially at risk during heavy rain.</div>
+          </div>
+        </div>
+
+        <div class="factor-row">
+          <div class="factor-weight">20%</div>
+          <div>
+            <div class="factor-name">Drainage Quality</div>
+            <div class="factor-desc">Poor drainage — common in peri-urban and informal settlements — traps water and multiplies flood damage even at moderate rainfall levels.</div>
+          </div>
+        </div>
+
+        <div class="factor-row">
+          <div class="factor-weight">10%</div>
+          <div>
+            <div class="factor-name">Soil Type</div>
+            <div class="factor-desc">Clay soils absorb very little water, increasing run-off. Sandy soils absorb significantly more, reducing surface flood risk.</div>
+          </div>
+        </div>
+
+        <div class="threshold-card">
+          <div class="advisory-head" style="margin-bottom:0.5rem;">Risk Thresholds</div>
+          <div class="threshold-list">
+            <div><span class="threshold-dot low"></span><strong>LOW</strong> 0–34 pts</div>
+            <div><span class="threshold-dot moderate"></span><strong>MODERATE</strong> 35–64 pts</div>
+            <div><span class="threshold-dot high"></span><strong>HIGH</strong> 65–100 pts</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Regional Demo Nodes -->
+    <div class="nodes-section">
+      <p class="section-label">Sample site risk examples</p>
+      <div class="nodes-grid">
+        {% for r in demo_results %}
+        <div class="node-card {{ r.level }}">
+          <div class="node-location">{{ r.location }}</div>
+          <div class="node-risk {{ r.level }}">{{ r.emoji }} {{ r.level }}</div>
+          <div class="node-score-bar">
+            <div class="node-score-fill fill-{{ r.level }}" style="width: {{ r.score }}%"></div>
+          </div>
+          <div class="node-score-label">Score: {{ r.score }} / 100</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    FloodSense Action — Personal flood risk dashboard &nbsp;|&nbsp;
+    Built with Python + Flask &nbsp;|&nbsp; Memory Dube
+  </footer>
+
+  <script>
+    async function runAssessment(event) {
+      if (event) {
+        event.preventDefault();
+      }
+      const btn = document.getElementById("assessBtn");
+      const location = document.getElementById("location").value.trim() || "Your area";
+      const rainfall  = parseFloat(document.getElementById("rainfall").value);
+      const elevation = parseFloat(document.getElementById("elevation").value);
+      const drainage  = document.getElementById("drainage").value;
+      const soil      = document.getElementById("soil").value;
+
+      // Basic validation — surface errors into the result panel instead of a blocking alert
+      if (isNaN(rainfall) || isNaN(elevation) || !drainage || !soil) {
+        const panel = document.getElementById("resultPanel");
+        document.getElementById("advisoryText").textContent = "Please fill in all fields (rainfall, elevation, drainage, soil) before assessing.";
+        document.getElementById("summaryIcon").textContent = '⚠️';
+        document.getElementById("summaryTitle").textContent = 'Incomplete input';
+        document.getElementById("summaryNote").textContent = 'Provide values for rainfall, elevation, drainage and soil to get a recommendation.';
+        panel.classList.add('visible');
+        return;
+      }
+
+      console.log('Assessing', { location, rainfall, elevation, drainage, soil });
+
+      btn.disabled = true;
+      btn.textContent = "CALCULATING...";
+
+      try {
+        const res = await fetch("/assess", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ location, rainfall, elevation, drainage, soil })
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error('Server error: ' + res.status + ' ' + text);
+        }
+
+        console.log('HTTP', res.status, res.statusText);
+        const data = await res.json();
+        console.log('server data', data);
+        if (!data.success) throw new Error(data.error || 'unknown server error');
+
+        const r = data.result || {};
+
+        // Show panel early so users see something quickly
+        const panel = document.getElementById("resultPanel");
+        panel.classList.remove('visible');
+        void panel.offsetWidth;
+        panel.classList.add('visible');
+
+        // Badge
+        const badge = document.getElementById("riskBadge");
+        badge.textContent = `${r.emoji || ''}  ${r.level || 'UNKNOWN'} RISK`;
+        badge.className = `risk-badge risk-${r.level || 'UNKNOWN'}`;
+
+        // Score line
+        document.getElementById("scoreLine").textContent =
+          `Risk score: ${r.score} / 100  —  ${r.location}`;
+
+        // Breakdown bars
+        const factors = ["rainfall", "elevation", "drainage", "soil"];
+        const maxPts  = [40, 30, 20, 10];
+        let html = "";
+        if (r.breakdown) {
+          factors.forEach((f, i) => {
+            const pts = r.breakdown[f];
+            if (pts !== undefined) {
+              const pct = (pts / maxPts[i]) * 100;
+              html += `
+                <div class="breakdown-row">
+                  <span class="breakdown-label">${f}</span>
+                  <div class="breakdown-bar-wrap">
+                    <div class="breakdown-bar" style="width:${pct}%"></div>
+                  </div>
+                  <span class="breakdown-pts">${pts}pt</span>
+                </div>`;
+            }
+          });
+          document.getElementById("breakdown").innerHTML = html;
+        } else {
+          console.warn('breakdown missing from result:', r);
+        }
+
+        // Advisory (MUST display — this is the key action feedback)
+        console.log('advisory text:', r.advisory);
+        if (r.advisory) {
+          document.getElementById("advisoryText").textContent = r.advisory;
+        } else {
+          console.error('No advisory in response:', r);
+          document.getElementById("advisoryText").textContent = 'Assessment complete but no action advisory returned from the server.';
+        }
+        try {
+          updateSummary(r.level, r.location);
+        } catch (e) {
+          console.error('updateSummary failed', e);
+        }
+
+      } catch (err) {
+        console.error('Assessment failed', err);
+        // show error in the advisory panel so it's visible in the UI
+        document.getElementById("advisoryText").textContent = 'Assessment failed: ' + err.message;
+        document.getElementById("summaryIcon").textContent = '❗';
+        document.getElementById("summaryTitle").textContent = 'Assessment error';
+        document.getElementById("summaryNote").textContent = 'See advisory for details.';
+        const panel = document.getElementById("resultPanel");
+        panel.classList.add('visible');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "ASSESS FLOOD RISK →";
+      }
+    }
+
+    const themeToggle = document.getElementById('themeToggle');
+    const storedTheme = localStorage.getItem('floodTheme') || 'dark';
+    setTheme(storedTheme);
+
+    function setTheme(theme) {
+      document.body.classList.toggle('light-theme', theme === 'light');
+      themeToggle.textContent = theme === 'light' ? 'Dark mode' : 'Light mode';
+      localStorage.setItem('floodTheme', theme);
+    }
+
+    function toggleTheme() {
+      setTheme(document.body.classList.contains('light-theme') ? 'dark' : 'light');
+    }
+
+    function updateSummary(level, location) {
+      const icon = document.getElementById('summaryIcon');
+      const title = document.getElementById('summaryTitle');
+      const note = document.getElementById('summaryNote');
+
+      if (level === 'HIGH') {
+        icon.textContent = '🌧️';
+        title.textContent = `High risk at ${location}`;
+        note.textContent = 'Heavy rain, low ground and poor drainage combine to produce a high risk event. Move people and property to higher ground now.';
+      } else if (level === 'MODERATE') {
+        icon.textContent = '⛅';
+        title.textContent = `Moderate risk at ${location}`;
+        note.textContent = 'Conditions are unstable. Monitor rainfall and prepare to protect property if conditions worsen. Keep drainage clear and stay ready to respond.';
+      } else {
+        icon.textContent = '☀️';
+        title.textContent = `Low risk at ${location}`;
+        note.textContent = 'Current conditions are stable. Continue to monitor weather and maintain drains so risk stays low.';
+      }
+    }
+
+  </script>
+
+</body>
+</html>

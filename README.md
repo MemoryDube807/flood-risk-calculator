@@ -130,8 +130,7 @@ This calculator is one component of the larger **FloodSense Action** platform â€
 
 ## Authors
 
-Team WorldChangers â€” Copperbelt University, Zambia  
-*4th UbuntuNet Alliance Women Hackathon 2026*
+Memory Dube
 
 ---
 

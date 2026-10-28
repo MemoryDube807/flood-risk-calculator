@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: floodsense-action
+    name: floodsense-zambia
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: python app.py
